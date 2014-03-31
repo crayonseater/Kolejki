@@ -1,0 +1,62 @@
+import java.util.*;
+import java.io.*;
+
+
+public class Generator
+{
+	
+	int iloscCiagowTestowych, iloscProcesow, minFaza, maxFaza, kwantCzasu, maxOpoznienie;
+	
+	public void getData() throws IOException //wczytaj dane
+	{
+		Scanner sc = new Scanner(System.in);
+		
+		{
+			System.out.println("Podaj ilosc ciagow testowych.");
+			if(sc.hasNextInt())
+			{
+				iloscCiagowTestowych = sc.nextInt();
+				
+			}
+		
+			
+			System.out.println("Podaj ilosc procesow.");
+			if(sc.hasNextInt())
+			{
+				iloscProcesow = sc.nextInt();
+			}
+				
+			System.out.println("Podaj minimalna faze.");
+			if(sc.hasNextInt())
+			{
+				minFaza = sc.nextInt();
+			
+			}
+			System.out.println("Podaj maksymalna faze.");
+			if(sc.hasNextInt())
+			{
+				maxFaza = sc.nextInt();
+			}
+			if(maxFaza < minFaza)
+			{
+				maxFaza = minFaza;
+			}
+			System.out.println("Podaj kwant czasu.");
+			if(sc.hasNextInt())
+			{
+				kwantCzasu = sc.nextInt();
+			}	
+			System.out.println("Podaj maksymalne opoznienie.");
+			if(sc.hasNextInt())
+			{
+				maxOpoznienie = sc.nextInt();
+				
+		}
+		
+		sc.close();
+			}
+	}
+}
+		
+
+		
