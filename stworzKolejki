@@ -1,0 +1,235 @@
+import java.util.*;
+import java.io.*;
+
+
+public class Queueing
+{
+	Random random = new Random();
+	int iloscCiagowTestowych, iloscProcesow, minFaza, maxFaza, kwantCzasu, maxOpoznienie, i, j, timer, added;
+	double avgDelayFCFS, avgDelaySJF, avgDelaySJFWithPreemption, avgDelayRR, suma;
+	ArrayList<Process> stack = new ArrayList<Process>();
+	ArrayList<ArrayList<Process>> array;
+	boolean noMoreProcesses = false;
+	int[] timeToNext;
+	Process p;
+	ListIterator it;
+
+	
+	public void createQueue()
+	{
+		array = new ArrayList<ArrayList<Process>>();
+		for(int i = 0; i < iloscCiagowTestowych; i++)
+		{
+			array.add(new ArrayList<Process>());
+			for(int j = 0; j < iloscProcesow; j++)
+			{
+				Process p = new Process(random.nextInt(maxFaza-minFaza+1)+minFaza);
+				array.get(i).add(p);
+			}
+		}
+		timeToNext = new int[iloscProcesow];
+		for(int i = 0; i < timeToNext.length; i++)
+			timeToNext[i] = random.nextInt(maxOpoznienie +1);
+	}
+	
+	
+	public void fcfs()
+	{
+		suma = 0;
+		for(ArrayList<Process> al: array)
+		{
+			added = 0;
+			timer = 0;
+			i = 0;
+			noMoreProcesses = false;
+			stack.clear();
+			stack.add(al.get(0));
+			while(!noMoreProcesses || !stack.isEmpty())
+			{
+				if(!stack.isEmpty())
+				{
+					--stack.get(0).remaining;
+					if(stack.get(0).remaining == 0)
+					{
+						stack.get(0).remaining = stack.get(0).faza;
+						stack.remove(0);
+					}
+					suma += stack.size()-1;
+				}
+				for(int i = 0; i < timeToNext.length; i++)
+				{
+					if(timeToNext[i] == timer && i < al.size())
+					{
+						stack.add(al.get(i));
+						++added;
+					}
+				}
+				if(added >= al.size())
+					noMoreProcesses = true;
+				++timer;
+			}
+		}
+		avgDelayFCFS = suma/(double)(iloscCiagowTestowych * iloscProcesow);
+	}
+
+
+
+	public void sjf()
+	{
+		suma = 0;
+		for(ArrayList<Process> al: array)
+		{
+			added = 0;
+			timer = 0;
+			i = 0;
+			noMoreProcesses = false;
+			stack.clear();
+			stack.add(al.get(0));
+			while(!noMoreProcesses || !stack.isEmpty())
+			{
+				if(!stack.isEmpty())
+				{
+					--stack.get(0).remaining;
+					if(stack.get(0).remaining == 0)
+					{
+						stack.get(0).remaining = stack.get(0).faza;
+						stack.remove(0);
+					}
+					suma += stack.size()-1;
+				}
+				for(int i = 0; i < timeToNext.length; i++)
+				{
+					if(timeToNext[i] == timer && i < al.size())
+					{
+						j = 1;
+						while(j < stack.size() && al.get(i).compareTo(stack.get(j)) > 0)
+							++j;
+						if(j >= stack.size())
+						{
+							stack.add(al.get(i));
+							++added;
+						}
+						else
+						{
+							stack.add(j, al.get(i));
+							++added;
+						}
+					}
+					
+				}
+				if(added >= al.size())
+					noMoreProcesses = true;
+				++timer;
+			}
+		}
+		avgDelaySJF = suma/(double)(iloscCiagowTestowych * iloscProcesow);
+	}
+	
+	public void sjfWithPreemption()
+	{
+		suma = 0;
+		for(ArrayList<Process> al: array)
+		{
+			added = 0;
+			timer = 0;
+			i = 0;
+			noMoreProcesses = false;
+			stack.clear();
+			stack.add(al.get(0));
+			while(!noMoreProcesses || !stack.isEmpty())
+			{
+				if(!stack.isEmpty())
+				{
+					--stack.get(0).remaining;
+					if(stack.get(0).remaining == 0)
+					{	
+						stack.get(0).remaining = stack.get(0).faza;
+						stack.remove(0);
+					}
+					suma += stack.size()-1;
+				}
+				for(int i = 0; i < timeToNext.length; i++)
+				{
+					if(timeToNext[i] == timer && i < al.size())
+					{
+						j = 0;
+						while(j < stack.size() && al.get(i).compareTo(stack.get(j)) > 0)
+							++j; // jeśli nie wpadnie nic krótszego to dodawaj jak zwykle
+						if(j >= stack.size())
+						{
+							stack.add(al.get(i));
+							++added;
+						}
+                                                else  //wywłaszenie - jeśli wpadnie j krótszy niż reszta to wrzuć go na początek i dodawaj resztę
+						{
+							stack.add(j, al.get(i));
+							++added;
+						}
+					}
+					else if(i >= al.size())
+						noMoreProcesses = true;
+				}
+				if(added >= al.size())
+					noMoreProcesses = true;
+				++timer;
+			}
+		}
+		avgDelaySJFWithPreemption = suma/(double)(iloscCiagowTestowych * iloscProcesow);
+		
+		public void rr()
+	{
+		suma = 0;
+		for(ArrayList<Process> al: array)
+		{
+			timer = 0;
+			added = 0;
+			i = 0;
+			noMoreProcesses = false;
+			stack.clear();
+			stack.add(al.get(0));
+			while(!noMoreProcesses || !stack.isEmpty())
+			{
+				it = stack.listIterator();
+				while(it.hasNext())
+				{
+					p = (Process)it.next();
+					if(p.remaining <= 0)
+					{
+						p.remaining = p.faza;
+						stack.remove(p);
+						it = stack.listIterator();
+					}
+					else
+					{
+						for(int i = 0; p.remaining > 0 && i < kwantCzasu; i++)
+						{
+							--p.remaining;
+							suma += stack.size()-1;
+							for(int j = 0; j < timeToNext.length; j++)
+							{
+								if(timeToNext[j] == timer)
+								{
+									stack.add(al.get(j));
+									++added;
+									it = stack.listIterator();
+								}
+							}
+							++timer;
+						}
+					}
+				}
+				if(added >= al.size())
+					noMoreProcesses = true;
+			}
+		}
+		avgDelayRR = suma/(double)(iloscCiagowTestowych * iloscProcesow);
+	}
+	}
+	
+	public void print()
+	{
+		System.out.println("Przecietne opoznienie w FCFS: " + avgDelayFCFS);
+		System.out.println("Przecietne opoznienie w SJF: " + avgDelaySJF);
+		System.out.println("Przecietne opoznienie w SJF/p: " + avgDelaySJFWithPreemption);
+		System.out.println("Przecietne opoznienie w RR: " + avgDelayRR);
+	}
